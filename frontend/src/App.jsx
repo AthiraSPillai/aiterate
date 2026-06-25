@@ -663,7 +663,7 @@ function App() {
               <h2><BarChart3 size={18} /> Run Optimizer</h2>
               <ValidationSummary issues={validationIssues} />
             </div>
-            <p className="section-help">Run after data, policies, models, credentials, and tracking are ready. AIterate runs a SkillOpt-style experiment: reflect on failures, apply bounded prompt/skill edits, validate candidates, accept improvements, and retain rejected changes for review.</p>
+            <p className="section-help">Run after data, policies, models, credentials, and tracking are ready. AIterate reflects on failures, applies bounded prompt/skill edits, validates candidates, accepts improvements, and retains rejected changes for review.</p>
             <button className="primary run-button" onClick={optimize} disabled={loading || !canRun}>
               <Play size={18} />
               {loading ? "Running optimization" : canRun ? "Run optimizer" : "Complete setup to run"}

@@ -17,7 +17,7 @@ regression signals, approvals, and traceable versions.
 
 - Create prompts and skills from raw data, examples, policies, and rubrics.
 - Import common formats: text, CSV, JSON, YAML, and YML.
-- Replace ad hoc AI artifact edits with SkillOpt-style experiment runs.
+- Replace ad hoc AI artifact edits with reproducible optimization runs.
 - Optimize artifacts using weighted policy priorities.
 - Evaluate artifacts with native checks for policy coverage, JSON shape, similarity, grounding,
   uncertainty handling, prompt injection, and PII leakage.
@@ -40,10 +40,6 @@ Optional provider and tracking integrations:
 ```bash
 pip install "aiterate[providers,tracking]"
 ```
-
-AIterate includes `skillopt` as a default dependency. `SkillOptInspiredOptimizer` uses
-SkillOpt edit/update/gate primitives, while AIterate adds raw-data ingestion, policy weighting,
-versioning, tracking, approval, and promotion workflows around those experiments.
 
 Postgres-backed production installs:
 
@@ -99,7 +95,7 @@ The UI supports:
 - MLflow/LangSmith tracking selection
 - Git artifact tracking and promotion PR workflow scaffolding
 - GitHub and Bitbucket promotion PR publishing when server credentials are configured
-- SkillOpt-style optimization run results with accepted and rejected candidate decisions
+- optimization run results with accepted and rejected candidate decisions
 - native eval report with pass rate, failed checks, and suggested prompt/skill changes
 - validate and approve flow before creating a promotion PR
 
@@ -147,7 +143,7 @@ If you already have a prompt or skill, use it as the starting baseline:
 aiterate optimize --name support-agent --data raw_support_notes.txt --baseline current_prompt.md --policy policies.yml
 ```
 
-If `--baseline` is omitted, AIterate creates the initial SkillOpt baseline from raw data and
+If `--baseline` is omitted, AIterate creates the initial baseline from raw data and
 policies. The CLI defaults to a local mock provider so developers can test automation before adding
 model credentials.
 
