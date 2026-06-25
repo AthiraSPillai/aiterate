@@ -1,0 +1,11 @@
+policies:
+  - id: cite_sources
+    text: Always cite the policy or dataset section used to answer.
+    weight: 0.35
+  - id: concise
+    text: Keep answers under 180 words unless the user asks for detail.
+    weight: 0.2
+  - id: escalate_uncertainty
+    text: Escalate to a human reviewer when source data is incomplete or contradictory.
+    weight: 0.45
+

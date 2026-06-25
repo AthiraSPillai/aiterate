@@ -1,0 +1,71 @@
+services:
+  api:
+    build: .
+    command: uvicorn aiterate.api.main:app --host 0.0.0.0 --port 8000
+    environment:
+      AIT_ENV: production
+      AIT_DATABASE_URL: postgresql+psycopg://aiterate:aiterate@postgres:5432/aiterate
+      AIT_SECRET_KEY: ${AIT_SECRET_KEY:?Set AIT_SECRET_KEY to a Fernet key before starting}
+      AIT_CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    ports:
+      - "8000:8000"
+    volumes:
+      - aiterate-data:/app/.aiterate
+    depends_on:
+      - postgres
+      - redis
+      - mlflow
+
+  worker:
+    build: .
+    command: python -m aiterate.worker
+    environment:
+      AIT_ENV: production
+      AIT_DATABASE_URL: postgresql+psycopg://aiterate:aiterate@postgres:5432/aiterate
+      AIT_SECRET_KEY: ${AIT_SECRET_KEY:?Set AIT_SECRET_KEY to a Fernet key before starting}
+    volumes:
+      - aiterate-data:/app/.aiterate
+    depends_on:
+      - postgres
+      - redis
+
+  frontend:
+    image: node:22-alpine
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+    depends_on:
+      - api
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: aiterate
+      POSTGRES_USER: aiterate
+      POSTGRES_PASSWORD: aiterate
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.15.1
+    command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:///mlflow.db --default-artifact-root /mlflow/artifacts
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow-data:/mlflow
+
+volumes:
+  aiterate-data:
+  postgres-data:
+  mlflow-data:

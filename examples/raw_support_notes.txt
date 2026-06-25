@@ -1,0 +1,4 @@
+Customers ask support agents to summarize account changes, explain policy limits, and cite the
+source policy. Responses must be concise, factual, and include escalation guidance when confidence is
+low. Recent failures included missing citations and overconfident answers when data was incomplete.
+
