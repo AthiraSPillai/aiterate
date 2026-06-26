@@ -34,8 +34,15 @@ regression signals, approvals, and traceable versions.
 
 ### Use The Product UI
 
-The simplest way to use Aiterate is the published Docker image. It includes the backend API and the
-built React UI in one container.
+There are two Docker paths:
+
+| Goal | Use |
+| --- | --- |
+| Try Aiterate quickly with the UI and API | `docker run` with the GHCR image |
+| Run Aiterate with Postgres, Redis, and MLflow | `docker compose` using the GHCR image |
+
+The simplest path is the published GHCR image. It includes the backend API and the built React UI in
+one container.
 
 ```bash
 docker run --rm -p 8000:8000 \
@@ -53,16 +60,51 @@ The mounted `aiterate-data` volume keeps run history, project settings, and encr
 credentials across restarts. Users can paste provider keys in the UI once; saved secrets are stored
 encrypted server-side and never shown back in full.
 
-For a production-like local stack with Postgres, Redis, and MLflow, clone the repo and use Docker
-Compose:
+This single-container mode is best for trying the UI quickly. It uses local app storage in the
+mounted Docker volume. It does not start Postgres, Redis, or MLflow.
+
+To run the full local product stack with Postgres, Redis, and MLflow, use Docker Compose. The
+Compose file still uses the same published GHCR image for Aiterate; it just starts the supporting
+services beside it:
+
+```bash
+curl -O https://raw.githubusercontent.com/AthiraSPillai/aiterate/main/docker-compose.release.yml
+docker compose -f docker-compose.release.yml up
+```
+
+PowerShell:
+
+```powershell
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/AthiraSPillai/aiterate/main/docker-compose.release.yml -OutFile docker-compose.release.yml
+docker compose -f docker-compose.release.yml up
+```
+
+Open:
+
+```text
+Aiterate UI: http://localhost:8000
+MLflow UI:   http://localhost:5000
+```
+
+When using this Compose stack, keep the Aiterate tracking URI as:
+
+```text
+http://mlflow:5000
+```
+
+The API container talks to MLflow over the Compose network, so `http://localhost:5000` is for your
+browser, while `http://mlflow:5000` is for Aiterate inside Docker.
+
+This Compose file does not include provider, GitHub, or Bitbucket secret values. Add those once from
+the Aiterate UI when needed; they are encrypted in the server-side secret store.
+
+If you are developing Aiterate itself from source, clone the repo and build locally:
 
 ```bash
 git clone https://github.com/AthiraSPillai/aiterate.git
 cd aiterate
 docker compose up --build
 ```
-
-Open `http://localhost:8000` or `http://localhost:5173`.
 
 ### Developer CLI And SDK
 

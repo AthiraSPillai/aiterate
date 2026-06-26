@@ -130,7 +130,7 @@ Before announcing:
 - Enable Issues and Discussions.
 - Add branch protection for `main`.
 - Configure TestPyPI and PyPI trusted publishing.
-- Create a GitHub release tagged with the package version, for example `v0.1.1`.
+- Create a GitHub release tagged with the package version, for example `v0.1.2`.
 
 ## Known V1 Gaps To Be Honest About
 

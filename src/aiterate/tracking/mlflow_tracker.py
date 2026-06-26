@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 from aiterate.config import settings
 from aiterate.tracking.base import Tracker
@@ -23,12 +24,14 @@ class MLflowTracker(Tracker):
         token = token or settings.mlflow_tracking_token
         if token:
             os.environ["MLFLOW_TRACKING_TOKEN"] = token
-        uri = tracking_uri or settings.mlflow_tracking_uri
-        if uri:
-            self.mlflow.set_tracking_uri(uri)
+        self.tracking_uri = tracking_uri or settings.mlflow_tracking_uri
+        if self.tracking_uri:
+            self.mlflow.set_tracking_uri(self.tracking_uri)
 
     def start_run(self, name: str, metadata: dict[str, Any]) -> None:
         if not self.mlflow or not self.enabled:
+            return
+        if not self._server_available():
             return
         if not self._safe("start run", lambda: self.mlflow.set_experiment("aiterate")):
             return
@@ -61,3 +64,34 @@ class MLflowTracker(Tracker):
             self.last_error = f"MLflow {action} failed: {exc}"
             return False
         return True
+
+    def _server_available(self) -> bool:
+        uri = self.tracking_uri
+        if not uri:
+            return True
+        parsed = urlparse(uri)
+        if parsed.scheme not in {"http", "https"}:
+            return True
+        try:
+            import requests
+
+            response = requests.get(uri.rstrip("/") + "/health", timeout=2)
+            if response.status_code < 500:
+                return True
+            response = requests.get(uri, timeout=2)
+            if response.status_code < 500:
+                return True
+        except Exception as exc:
+            self.enabled = False
+            self.last_error = (
+                f"MLflow tracking is unavailable at {uri}. "
+                "Optimization continued without tracking. "
+                f"Details: {exc}"
+            )
+            return False
+        self.enabled = False
+        self.last_error = (
+            f"MLflow tracking is unavailable at {uri}. "
+            "Optimization continued without tracking."
+        )
+        return False
