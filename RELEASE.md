@@ -62,7 +62,7 @@ Use a fresh virtual environment:
 
 ```bash
 python -m venv .venv-release-test
-.venv-release-test\Scripts\python -m pip install dist\aiterate-0.1.0-py3-none-any.whl
+.venv-release-test\Scripts\python -m pip install (Get-ChildItem dist\aiterate-*-py3-none-any.whl | Select-Object -Last 1).FullName
 .venv-release-test\Scripts\aiterate --help
 ```
 
@@ -130,7 +130,7 @@ Before announcing:
 - Enable Issues and Discussions.
 - Add branch protection for `main`.
 - Configure TestPyPI and PyPI trusted publishing.
-- Create a GitHub release tagged `v0.1.0`.
+- Create a GitHub release tagged with the package version, for example `v0.1.1`.
 
 ## Known V1 Gaps To Be Honest About
 
