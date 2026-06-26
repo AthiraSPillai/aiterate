@@ -20,7 +20,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || (window.location.port === "5173" ? "http://127.0.0.1:8000" : "");
 const defaultMlflowTrackingUri = "http://host.docker.internal:5000";
 const supportedTypes = [".txt", ".csv", ".json", ".yaml", ".yml", ".md"];
 const maxUploadBytes = 2 * 1024 * 1024;
@@ -62,6 +62,68 @@ const samplePolicies = [
   { id: "clarity", text: "Give concise next steps in a professional support tone.", weight: 0.15 },
 ];
 
+function modelOption(id, label) {
+  return { id, label, recommended_for: ["optimizer", "target"], source: "fallback" };
+}
+
+function mergeModelCatalogs(fallbackCatalog, apiCatalog) {
+  const merged = {};
+  const providers = new Set([...Object.keys(fallbackCatalog || {}), ...Object.keys(apiCatalog || {})]);
+  for (const provider of providers) {
+    const models = [];
+    const seen = new Set();
+    for (const model of [...(apiCatalog?.[provider] || []), ...(fallbackCatalog?.[provider] || [])]) {
+      if (!model?.id || seen.has(model.id)) continue;
+      seen.add(model.id);
+      models.push(model);
+    }
+    merged[provider] = models;
+  }
+  return merged;
+}
+
+const fallbackModelCatalog = {
+  openai: [
+    modelOption("gpt-5.5", "GPT-5.5"),
+    modelOption("gpt-5.4", "GPT-5.4"),
+    modelOption("gpt-5.4-mini", "GPT-5.4 mini"),
+    modelOption("gpt-4.1", "GPT-4.1"),
+    modelOption("gpt-4.1-mini", "GPT-4.1 mini"),
+    modelOption("gpt-4o", "GPT-4o"),
+    modelOption("gpt-4o-mini", "GPT-4o mini"),
+  ],
+  anthropic: [
+    modelOption("claude-opus-4-1-20250805", "Claude Opus 4.1"),
+    modelOption("claude-sonnet-4-20250514", "Claude Sonnet 4"),
+    modelOption("claude-3-7-sonnet-latest", "Claude 3.7 Sonnet"),
+    modelOption("claude-3-5-sonnet-latest", "Claude 3.5 Sonnet"),
+    modelOption("claude-3-5-haiku-latest", "Claude 3.5 Haiku"),
+  ],
+  azure_openai: [
+    modelOption("gpt-5.5", "GPT-5.5 deployment"),
+    modelOption("gpt-5.4", "GPT-5.4 deployment"),
+    modelOption("gpt-4.1", "GPT-4.1 deployment"),
+    modelOption("gpt-4o", "GPT-4o deployment"),
+  ],
+  aws_bedrock: [
+    modelOption("anthropic.claude-opus-4-1-20250805-v1:0", "Claude Opus 4.1"),
+    modelOption("anthropic.claude-sonnet-4-20250514-v1:0", "Claude Sonnet 4"),
+    modelOption("anthropic.claude-3-5-sonnet-20240620-v1:0", "Claude 3.5 Sonnet"),
+    modelOption("amazon.nova-pro-v1:0", "Amazon Nova Pro"),
+    modelOption("amazon.nova-lite-v1:0", "Amazon Nova Lite"),
+    modelOption("meta.llama3-1-70b-instruct-v1:0", "Llama 3.1 70B Instruct"),
+  ],
+  litellm: [
+    modelOption("openai/gpt-5.5", "OpenAI GPT-5.5 via LiteLLM"),
+    modelOption("openai/gpt-4.1", "OpenAI GPT-4.1 via LiteLLM"),
+    modelOption("anthropic/claude-sonnet-4-20250514", "Claude Sonnet 4 via LiteLLM"),
+    modelOption("anthropic/claude-3-5-sonnet-latest", "Claude 3.5 Sonnet via LiteLLM"),
+    modelOption("gemini/gemini-2.5-pro", "Gemini 2.5 Pro via LiteLLM"),
+    modelOption("bedrock/amazon.nova-pro-v1:0", "Bedrock Nova Pro via LiteLLM"),
+    modelOption("ollama/llama3.1", "Ollama Llama 3.1 via LiteLLM"),
+  ],
+};
+
 function App() {
   const [projectName, setProjectName] = useState("support-agent");
   const [rawData, setRawData] = useState("");
@@ -101,7 +163,7 @@ function App() {
   const [backendStatus, setBackendStatus] = useState("checking");
   const [integrationStatus, setIntegrationStatus] = useState(null);
   const [integrationSetup, setIntegrationSetup] = useState(null);
-  const [modelCatalog, setModelCatalog] = useState({});
+  const [modelCatalog, setModelCatalog] = useState(fallbackModelCatalog);
   const [providerTestStatus, setProviderTestStatus] = useState("");
   const [testingProviderRole, setTestingProviderRole] = useState("");
   const [secretDraft, setSecretDraft] = useState(null);
@@ -363,8 +425,8 @@ function App() {
       .catch(() => setIntegrationSetup(null));
     fetch(`${apiBaseUrl}/v1/model-catalog?include_live=true`)
       .then((response) => (response.ok ? response.json() : {}))
-      .then(setModelCatalog)
-      .catch(() => setModelCatalog({}));
+      .then((catalog) => setModelCatalog(mergeModelCatalogs(fallbackModelCatalog, catalog)))
+      .catch(() => setModelCatalog(fallbackModelCatalog));
   }
 
   function syncCredentialReuse(status) {
