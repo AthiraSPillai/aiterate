@@ -11,21 +11,23 @@ WIDTH = 980
 HEIGHT = 560
 
 STEPS = [
-    ("Import context", "Upload notes, data files, policies, examples, and an optional baseline."),
-    ("Weight policies", "Set priorities so AI artifact changes become measurable rules."),
-    ("Configure models", "Choose optimizer and target providers, with separate credentials if needed."),
-    ("Run optimization", "Generate accepted and rejected artifact versions with lineage."),
-    ("Evaluate regressions", "Check grounding, JSON shape, similarity, safety, PII, and policy coverage."),
-    ("Approve best version", "Review insights, compare versions, and approve the release candidate."),
-    ("Promote with Git", "Create a PR and keep a traceable artifact history."),
+    ("Run History", "Open approved artifacts, continue from their best version, or compare models."),
+    ("Import context", "Upload examples, policies, references, and an optional baseline artifact."),
+    ("Weight policies", "Choose train/test split and turn policies into measurable scoring rules."),
+    ("Configure models", "Select optimizer and target models, with separate credentials when needed."),
+    ("Tracking optional", "Send runs to MLflow or LangSmith, or keep the workflow local."),
+    ("Run optimizer", "Generate scored candidates and keep complete experiment lineage."),
+    ("Review and approve", "See score progress, diffs, attempts not used, and approve the best version."),
+    ("Create Git PR", "Persist project Git settings, create a PR, or export the full package."),
+    ("Compare models", "Run the same approved prompt against selected models and eval modes."),
 ]
+STEP_BADGES = ["H", "1", "2", "3", "4", "5", "6", "7", "8"]
 
 COLORS = {
     "bg": "#f5f8fc",
     "ink": "#111827",
     "muted": "#64748b",
     "brand": "#155eef",
-    "brand_dark": "#0f3b96",
     "success": "#15803d",
     "line": "#dbe4f0",
     "panel": "#ffffff",
@@ -58,8 +60,14 @@ def draw_frame(active_index: int) -> Image.Image:
     font_body = font(19)
     font_small = font(15, bold=True)
 
-    draw.rounded_rectangle((22, 22, WIDTH - 22, 132), radius=10, fill=COLORS["panel"], outline=COLORS["line"], width=2)
-    draw.text((52, 44), "AIterate", font=font_big, fill=COLORS["ink"])
+    draw.rounded_rectangle(
+        (22, 22, WIDTH - 22, 132),
+        radius=10,
+        fill=COLORS["panel"],
+        outline=COLORS["line"],
+        width=2,
+    )
+    draw.text((52, 44), "Aiterate", font=font_big, fill=COLORS["ink"])
     draw.text(
         (52, 96),
         "Governed AI artifact lifecycle and change management from raw data and policies",
@@ -68,29 +76,34 @@ def draw_frame(active_index: int) -> Image.Image:
     )
 
     draw.rounded_rectangle((22, 154, 278, HEIGHT - 24), radius=10, fill=COLORS["nav"])
-    draw.text((44, 176), "SETUP PROGRESS", font=font_small, fill="#cbd5e1")
+    draw.text((44, 176), "WORKSPACE", font=font_small, fill="#cbd5e1")
 
     for index, (title, _) in enumerate(STEPS):
-        y = 210 + index * 44
+        y = 204 + index * 32
         done = index < active_index
         active = index == active_index
         fill = COLORS["nav_done"] if done else COLORS["nav_card"]
         outline = "#36b37e" if done else "#334155"
         if active:
             outline = COLORS["brand"]
-        draw.rounded_rectangle((42, y, 258, y + 34), radius=8, fill=fill, outline=outline, width=2)
-        badge = "#" if not done else "✓"
-        badge_text = str(index + 1) if not done else badge
+        draw.rounded_rectangle((42, y, 258, y + 27), radius=8, fill=fill, outline=outline, width=2)
+        badge_text = STEP_BADGES[index] if not done else "OK"
         badge_fill = COLORS["success"] if done else "#475569"
         if active:
             badge_fill = COLORS["brand"]
-        draw.ellipse((54, y + 5, 78, y + 29), fill=badge_fill)
-        draw.text((62 if len(badge_text) == 1 else 59, y + 9), badge_text, font=font_small, fill="#ffffff")
-        draw.text((90, y + 8), title, font=font_small, fill="#ffffff")
+        draw.ellipse((52, y + 4, 76, y + 28), fill=badge_fill)
+        draw.text((61 if len(badge_text) == 1 else 56, y + 8), badge_text, font=font_small, fill="#ffffff")
+        draw.text((88, y + 5), title, font=font_small, fill="#ffffff")
 
     card_x = 310
     card_y = 164
-    draw.rounded_rectangle((card_x, card_y, WIDTH - 32, HEIGHT - 34), radius=10, fill=COLORS["panel"], outline=COLORS["line"], width=2)
+    draw.rounded_rectangle(
+        (card_x, card_y, WIDTH - 32, HEIGHT - 34),
+        radius=10,
+        fill=COLORS["panel"],
+        outline=COLORS["line"],
+        width=2,
+    )
     title, subtitle = STEPS[active_index]
     draw.text((card_x + 34, card_y + 34), title, font=font_title, fill=COLORS["ink"])
     draw.text((card_x + 34, card_y + 74), subtitle, font=font_body, fill=COLORS["muted"])
@@ -102,7 +115,7 @@ def draw_frame(active_index: int) -> Image.Image:
 
 
 def draw_progress(draw: ImageDraw.ImageDraw, x: int, y: int, active_index: int) -> None:
-    dot_gap = 82
+    dot_gap = 62
     for index in range(len(STEPS)):
         cx = x + index * dot_gap
         if index < len(STEPS) - 1:
@@ -117,39 +130,49 @@ def draw_demo_panel(draw: ImageDraw.ImageDraw, x: int, y: int, active_index: int
     font_code = font(15)
     blocks = {
         0: [
-            ("raw_support_notes.txt", "#ffffff"),
-            ("Refund tickets, policy notes, escalation examples", "#eef4ff"),
-            ("Detected: policy rules, user scenarios, citation requirements", "#e8f7ee"),
+            ("Approved artifact badge in Run History", "#e8f7ee"),
+            ("Open run review or delete with confirmation", "#eef4ff"),
+            ("Best version becomes the next baseline", "#fff4e6"),
         ],
         1: [
-            ("accuracy 0.35", "#eef4ff"),
-            ("citations 0.30", "#eef4ff"),
-            ("uncertainty escalation 0.35", "#eef4ff"),
+            ("Data / Examples: tickets, conversations, eval rows", "#eef4ff"),
+            ("Policies: rules, tone, compliance, acceptance criteria", "#fff4e6"),
+            ("Knowledge Base: docs, SOPs, manuals, source references", "#e8f7ee"),
         ],
         2: [
-            ("Optimizer: OpenAI / gpt-4.1", "#eef4ff"),
-            ("Target: Anthropic / Claude", "#fff4e6"),
-            ("Credentials: saved separately, never displayed", "#e8f7ee"),
+            ("Train split 80% | Test holdout 20%", "#eef4ff"),
+            ("citations 0.30 | escalation 0.35", "#fff4e6"),
+            ("grounding 0.20 | brevity 0.15", "#e8f7ee"),
         ],
         3: [
-            ("Accepted v1 score 0.74", "#e8f7ee"),
-            ("Rejected candidate score 0.69", "#fff4e6"),
-            ("Accepted v2 score 0.88", "#e8f7ee"),
+            ("Optimizer: OpenAI / gpt-5.5", "#eef4ff"),
+            ("Target: Anthropic / Claude Sonnet", "#fff4e6"),
+            ("Credentials: saved separately, never displayed", "#e8f7ee"),
         ],
         4: [
-            ("Eval score 0.91 | pass rate 92%", "#e8f7ee"),
-            ("PASS source_grounded, uncertainty_handling", "#e8f7ee"),
-            ("FAIL brevity: tighten final artifact", "#fff4e6"),
+            ("MLflow tracking URI + token", "#eef4ff"),
+            ("LangSmith endpoint + project + key", "#fff4e6"),
+            ("Skip tracking and run locally", "#e8f7ee"),
         ],
         5: [
-            ("Review best version", "#eef4ff"),
-            ("Artifact changes needed: tighten brevity", "#fff4e6"),
-            ("Approved for promotion", "#e8f7ee"),
+            ("Candidate for approval score 0.91", "#e8f7ee"),
+            ("Attempt not used score 0.88", "#fff4e6"),
+            ("Cost, tokens, policy hash, data hash captured", "#eef4ff"),
         ],
         6: [
+            ("Version progress: v1 0.78 -> v2 0.91", "#eef4ff"),
+            ("Inspect attempts not used", "#fff4e6"),
+            ("Approve best version for promotion", "#e8f7ee"),
+        ],
+        7: [
             ("Create Git PR", "#eef4ff"),
-            ("Attach eval report and lineage", "#e8f7ee"),
+            ("Attach source snapshots, eval report, and lineage", "#e8f7ee"),
             ("Ready for production review", "#e8f7ee"),
+        ],
+        8: [
+            ("Approved artifact: support-agent run_123", "#eef4ff"),
+            ("Model A gpt-5.5 | Model B gpt-4o-mini", "#fff4e6"),
+            ("Estimated or live eval comparison", "#e8f7ee"),
         ],
     }
     for idx, (text, fill) in enumerate(blocks[active_index]):

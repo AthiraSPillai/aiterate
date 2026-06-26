@@ -98,9 +98,9 @@ class SecretStore:
     def _fernet(self) -> Fernet:
         key = settings.secret_key
         if not key:
-            if settings.environment == "production":
+            if settings.environment == "production" and not settings.auto_generate_secret_key:
                 raise RuntimeError("AIT_SECRET_KEY is required for encrypted secret storage.")
-            key_path = self.root / "local-dev.key"
+            key_path = self.root / "local-fernet.key"
             self.root.mkdir(parents=True, exist_ok=True)
             if not key_path.exists():
                 key_path.write_bytes(Fernet.generate_key())
@@ -109,6 +109,5 @@ class SecretStore:
 
 
 def _fingerprint(value: str) -> str:
-    prefix = value[:4] if len(value) >= 4 else "****"
     suffix = value[-4:] if len(value) >= 4 else "****"
-    return f"{prefix}...{suffix}"
+    return f"****...{suffix}"

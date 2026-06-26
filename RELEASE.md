@@ -1,4 +1,4 @@
-# AIterate Release Checklist
+# Aiterate Release Checklist
 
 Use this checklist for the first public release.
 
@@ -16,7 +16,7 @@ the upload attempt. If the name is taken, change `project.name` in `pyproject.to
 - Create the public GitHub repo, for example:
 
 ```bash
-gh repo create aiterate-ai/aiterate --public --source . --remote origin
+gh repo create AthiraSPillai/aiterate --public --source . --remote origin
 ```
 
 - Update `pyproject.toml` URLs if your final org/repo differs.

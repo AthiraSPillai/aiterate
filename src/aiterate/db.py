@@ -66,6 +66,43 @@ class JobRecord(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
 
 
+class ModelCatalogRecord(Base):
+    __tablename__ = "model_catalog"
+
+    id: Mapped[str] = mapped_column(String(160), primary_key=True)
+    provider: Mapped[str] = mapped_column(String(80), index=True)
+    model_id: Mapped[str] = mapped_column(String(255))
+    label: Mapped[str] = mapped_column(String(255))
+    recommended_for: Mapped[list[str]] = mapped_column(JSON, default=list)
+    enabled: Mapped[int] = mapped_column(Integer, default=1, index=True)
+    sort_order: Mapped[int] = mapped_column(Integer, default=100)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
+
+
+class ModelPriceRecord(Base):
+    __tablename__ = "model_prices"
+
+    id: Mapped[str] = mapped_column(String(180), primary_key=True)
+    provider: Mapped[str] = mapped_column(String(80), index=True)
+    model_id: Mapped[str] = mapped_column(String(255), index=True)
+    currency: Mapped[str] = mapped_column(String(12), default="USD")
+    input_per_1m_tokens: Mapped[float] = mapped_column()
+    output_per_1m_tokens: Mapped[float] = mapped_column()
+    source: Mapped[str] = mapped_column(String(255), default="")
+    notes: Mapped[str] = mapped_column(Text, default="")
+    enabled: Mapped[int] = mapped_column(Integer, default=1, index=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
+
+
+class ProjectSettingsRecord(Base):
+    __tablename__ = "project_settings"
+
+    project_name: Mapped[str] = mapped_column(String(255), primary_key=True)
+    payload: Mapped[dict] = mapped_column(JSON)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
+
+
 engine = create_engine(settings.database_url, pool_pre_ping=True)
 SessionLocal = sessionmaker(engine, expire_on_commit=False)
 _migrations_applied = False

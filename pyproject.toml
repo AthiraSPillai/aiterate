@@ -9,7 +9,7 @@ description = "AI Artifact Lifecycle Management from raw data and policies."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "Apache-2.0"
-authors = [{ name = "AIterate contributors" }]
+authors = [{ name = "Aiterate contributors" }]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Framework :: FastAPI",
@@ -50,11 +50,11 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/aiterate-ai/aiterate"
-Repository = "https://github.com/aiterate-ai/aiterate"
-Issues = "https://github.com/aiterate-ai/aiterate/issues"
-Documentation = "https://github.com/aiterate-ai/aiterate#readme"
-Security = "https://github.com/aiterate-ai/aiterate/security/policy"
+Homepage = "https://github.com/AthiraSPillai/aiterate"
+Repository = "https://github.com/AthiraSPillai/aiterate"
+Issues = "https://github.com/AthiraSPillai/aiterate/issues"
+Documentation = "https://github.com/AthiraSPillai/aiterate#readme"
+Security = "https://github.com/AthiraSPillai/aiterate/security/policy"
 
 [project.optional-dependencies]
 providers = [

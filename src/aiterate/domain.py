@@ -168,6 +168,8 @@ class OptimizationRequest(BaseModel):
     name: str
     artifact_kind: ArtifactKind = ArtifactKind.PROMPT
     raw_data: str
+    policy_context: str | None = None
+    knowledge_base_context: str | None = None
     baseline_artifact: str | None = None
     policies: list[PriorityRule] = Field(default_factory=list)
     eval_assertions: list[EvalAssertion] = Field(default_factory=list)
@@ -177,10 +179,24 @@ class OptimizationRequest(BaseModel):
     enable_git_tracking: bool = True
     create_pull_request: bool = False
     tracker_uri: str | None = None
+    tracker_project: str | None = None
+    tracker_api_key: SecretStr | None = None
     tracker: TrackerKind = TrackerKind.NOOP
     iterations: int = Field(default=3, ge=1, le=20)
     validation_split: float = Field(default=0.25, ge=0.05, le=0.8)
+    promotion_threshold: float = Field(default=0.8, ge=0, le=1)
+    max_budget_usd: float | None = Field(default=None, ge=0)
+    run_target_validation: bool = False
     seed: int = 7
+
+
+class ProjectSettings(BaseModel):
+    project_name: str
+    enable_git_tracking: bool = True
+    git_remote: str = ""
+    artifact_branch: str = "main"
+    enable_promotion_pr_workflow: bool = False
+    pr_base_branch: str = "main"
 
 
 class ArtifactVersion(BaseModel):
@@ -209,6 +225,22 @@ class EvaluationInsight(BaseModel):
     data_risks: list[str] = Field(default_factory=list)
 
 
+class CostEstimate(BaseModel):
+    provider: str
+    model: str
+    currency: str = "USD"
+    input_tokens: int = 0
+    output_tokens: int = 0
+    input_cost: float = 0
+    output_cost: float = 0
+    total_cost: float = 0
+    input_per_1m_tokens: float = 0
+    output_per_1m_tokens: float = 0
+    pricing_source: str = ""
+    approximate: bool = True
+    notes: str = ""
+
+
 class OptimizationRun(BaseModel):
     id: str = Field(default_factory=lambda: new_id("run"))
     name: str
@@ -223,6 +255,8 @@ class OptimizationRun(BaseModel):
     insights: EvaluationInsight | None = None
     evaluation_report: EvaluationReport | None = None
     behavior_report: BehaviorEvaluationReport | None = None
+    cost_estimate: CostEstimate | None = None
+    approval: dict[str, Any] | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 

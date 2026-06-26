@@ -60,7 +60,7 @@ def evaluate_artifact(
 ) -> EvaluationReport:
     checks = []
     checks.extend(_policy_checks(content, policy_set.rules))
-    for assertion in [*(assertions or []), *DEFAULT_EVAL_ASSERTIONS]:
+    for assertion in _merge_assertions(assertions or []):
         checks.append(_evaluate_assertion(content, cases, assertion))
 
     total_weight = sum(check.weight for check in checks) or 1
@@ -75,6 +75,18 @@ def evaluate_artifact(
         checks=checks,
         failed_metrics=[check.metric for check in checks if not check.passed],
     )
+
+
+def _merge_assertions(assertions: list[EvalAssertion]) -> list[EvalAssertion]:
+    merged: list[EvalAssertion] = []
+    seen = set()
+    for assertion in [*assertions, *DEFAULT_EVAL_ASSERTIONS]:
+        key = (assertion.id, assertion.metric or assertion.id, assertion.type)
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append(assertion)
+    return merged
 
 
 def _policy_checks(content: str, rules: list[PriorityRule]) -> list[EvalCheckResult]:

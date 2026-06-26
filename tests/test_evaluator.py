@@ -50,3 +50,20 @@ def test_evaluator_flags_prompt_injection_and_pii():
 
     assert "prompt_injection_safety" in report.failed_metrics
     assert "pii_safety" in report.failed_metrics
+
+
+def test_evaluator_does_not_duplicate_default_assertions():
+    report = evaluate_artifact(
+        "Cite sources and escalate incomplete data.",
+        ["Customer asks for source-backed answer."],
+        PolicySet(),
+        [
+            EvalAssertion(
+                id="source_grounded",
+                type=AssertionKind.SOURCE_GROUNDED,
+                metric="source_grounded",
+            )
+        ],
+    )
+
+    assert [check.metric for check in report.checks].count("source_grounded") == 1

@@ -5,11 +5,13 @@ services:
     environment:
       AIT_ENV: production
       AIT_DATABASE_URL: postgresql+psycopg://aiterate:aiterate@postgres:5432/aiterate
-      AIT_SECRET_KEY: ${AIT_SECRET_KEY:?Set AIT_SECRET_KEY to a Fernet key before starting}
+      AIT_SECRET_KEY: ${AIT_SECRET_KEY:-}
+      AIT_AUTO_GENERATE_SECRET_KEY: ${AIT_AUTO_GENERATE_SECRET_KEY:-true}
       AIT_CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
       MLFLOW_TRACKING_URI: http://mlflow:5000
     ports:
       - "8000:8000"
+      - "5173:8000"
     volumes:
       - aiterate-data:/app/.aiterate
     depends_on:
@@ -23,23 +25,13 @@ services:
     environment:
       AIT_ENV: production
       AIT_DATABASE_URL: postgresql+psycopg://aiterate:aiterate@postgres:5432/aiterate
-      AIT_SECRET_KEY: ${AIT_SECRET_KEY:?Set AIT_SECRET_KEY to a Fernet key before starting}
+      AIT_SECRET_KEY: ${AIT_SECRET_KEY:-}
+      AIT_AUTO_GENERATE_SECRET_KEY: ${AIT_AUTO_GENERATE_SECRET_KEY:-true}
     volumes:
       - aiterate-data:/app/.aiterate
     depends_on:
       - postgres
       - redis
-
-  frontend:
-    image: node:22-alpine
-    working_dir: /app
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
-    ports:
-      - "5173:5173"
-    volumes:
-      - ./frontend:/app
-    depends_on:
-      - api
 
   postgres:
     image: postgres:16-alpine

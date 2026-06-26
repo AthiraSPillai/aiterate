@@ -1,14 +1,10 @@
 .aiterate/
 .env
 .env.*
-!.env.example
+.git/
 .pytest_cache/
 .pytest*/
 .ruff_cache/
-.coverage
-htmlcov/
-.mypy_cache/
-.pyright/
 .venv/
 .venv313/
 __pycache__/
@@ -28,21 +24,11 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-.DS_Store
-Thumbs.db
-.idea/
-.vscode/
-
 frontend/node_modules/
 frontend/dist/
 
 dist/
 build/
 *.egg-info/
-.venv-release-test/
-.venv-release-test*/
-.venv-testpypi/
-
-# Local agent/tooling context
 AGENTS.md
 .agents/

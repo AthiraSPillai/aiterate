@@ -18,6 +18,8 @@ class Settings(BaseSettings):
         validation_alias="AIT_DATABASE_URL",
     )
     secret_key: str | None = Field(default=None, validation_alias="AIT_SECRET_KEY")
+    auto_generate_secret_key: bool = Field(default=False, validation_alias="AIT_AUTO_GENERATE_SECRET_KEY")
+    trust_env_proxy: bool = Field(default=False, validation_alias="AIT_TRUST_ENV_PROXY")
     openai_api_key: str | None = Field(default=None, validation_alias="OPENAI_API_KEY")
     anthropic_api_key: str | None = Field(default=None, validation_alias="ANTHROPIC_API_KEY")
     azure_openai_api_key: str | None = Field(default=None, validation_alias="AZURE_OPENAI_API_KEY")
@@ -28,10 +30,16 @@ class Settings(BaseSettings):
     aws_region: str = Field(default="us-east-1", validation_alias="AWS_REGION")
     aws_profile: str | None = Field(default=None, validation_alias="AWS_PROFILE")
     mlflow_tracking_uri: str | None = Field(default=None, validation_alias="MLFLOW_TRACKING_URI")
+    mlflow_tracking_token: str | None = Field(default=None, validation_alias="MLFLOW_TRACKING_TOKEN")
     langsmith_api_key: str | None = Field(default=None, validation_alias="LANGSMITH_API_KEY")
+    langsmith_endpoint: str = Field(default="https://api.smith.langchain.com", validation_alias="LANGSMITH_ENDPOINT")
     github_token: str | None = Field(default=None, validation_alias="GITHUB_TOKEN")
     github_app_id: str | None = Field(default=None, validation_alias="GITHUB_APP_ID")
+    github_oauth_client_id: str | None = Field(default=None, validation_alias="GITHUB_OAUTH_CLIENT_ID")
+    github_oauth_client_secret: str | None = Field(default=None, validation_alias="GITHUB_OAUTH_CLIENT_SECRET")
     bitbucket_token: str | None = Field(default=None, validation_alias="BITBUCKET_TOKEN")
+    bitbucket_oauth_client_id: str | None = Field(default=None, validation_alias="BITBUCKET_OAUTH_CLIENT_ID")
+    bitbucket_oauth_client_secret: str | None = Field(default=None, validation_alias="BITBUCKET_OAUTH_CLIENT_SECRET")
     secret_provider: str = Field(default="database", validation_alias="AIT_SECRET_PROVIDER")
     auth_enabled: bool = Field(default=False, validation_alias="AIT_AUTH_ENABLED")
     admin_api_key: str | None = Field(default=None, validation_alias="AIT_ADMIN_API_KEY")
@@ -45,6 +53,7 @@ class Settings(BaseSettings):
     gcp_project_id: str | None = Field(default=None, validation_alias="GCP_PROJECT_ID")
     bitbucket_workspace: str | None = Field(default=None, validation_alias="BITBUCKET_WORKSPACE")
     bitbucket_repo_slug: str | None = Field(default=None, validation_alias="BITBUCKET_REPO_SLUG")
+    public_base_url: str = Field(default="http://localhost:5173", validation_alias="AIT_PUBLIC_BASE_URL")
     cors_origins: str = Field(
         default="http://127.0.0.1:5173,http://localhost:5173",
         validation_alias="AIT_CORS_ORIGINS",

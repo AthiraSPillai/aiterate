@@ -1,19 +1,19 @@
-# AIterate
+# Aiterate
 
 **AI Artifact Lifecycle Management from raw data and policies.**
 
-AIterate helps teams turn messy source material into production-ready prompts and agent skills.
-Give it raw data, policies, examples, and priorities; AIterate creates, optimizes, validates,
+Aiterate helps teams turn messy source material into production-ready prompts and agent skills.
+Give it raw data, policies, examples, and priorities; Aiterate creates, optimizes, validates,
 approves, versions, tracks, and promotes the result.
 
 Manual AI artifact changes do not scale well. Teams lose track of why a prompt or skill changed,
 which policy or dataset triggered the change, whether old behavior regressed, and which version is
-safe to promote. AIterate turns those edits into a repeatable lifecycle with eval checks,
+safe to promote. Aiterate turns those edits into a repeatable lifecycle with eval checks,
 regression signals, approvals, and traceable versions.
 
-![AIterate workflow](docs/assets/aiterate-workflow.gif)
+![Aiterate workflow](docs/assets/aiterate-workflow.gif)
 
-## Why Use AIterate?
+## Why Use Aiterate?
 
 - Create prompts and skills from raw data, examples, policies, and rubrics.
 - Import common formats: text, CSV, JSON, YAML, and YML.
@@ -27,6 +27,7 @@ regression signals, approvals, and traceable versions.
 - Start from an existing baseline prompt/skill or generate one from raw data.
 - Use OpenAI, Azure OpenAI, AWS Bedrock, or other providers through LiteLLM.
 - Track experiments with MLflow, with optional LangSmith support.
+- Compare approved artifacts across model providers using the same prompt and rubric.
 - Run locally with SQLite metadata storage, then move to Postgres for production.
 
 ## Install
@@ -53,9 +54,53 @@ Managed secrets integrations:
 pip install "aiterate[managed-secrets]"
 ```
 
-AIterate supports Python **3.11, 3.12, and 3.13**.
+Aiterate supports Python **3.11, 3.12, and 3.13**.
 
 ## Quickstart
+
+### 5-Minute Demo
+
+Try Aiterate with the built-in sample flow first. You do not need cloud model keys for the first
+run.
+
+```bash
+git clone https://github.com/AthiraSPillai/aiterate.git
+cd aiterate
+docker compose up --build
+```
+
+Open `http://localhost:5173`, then:
+
+1. Go to **Import context** and click **Load sample project**.
+2. Review the separated **Data / Examples**, **Policies**, and **Knowledge Base** context.
+3. Go to **Configure models** and keep the local/mock setup for a no-key demo, or save a provider
+   credential for OpenAI, Anthropic, Azure OpenAI, AWS Bedrock, or LiteLLM.
+4. Go to **Run optimizer** and click **Run optimizer**.
+5. Open **Review and approve** to see score progress, accepted versions, rejected attempts, eval
+   insights, and the best prompt/skill.
+6. Click **Approve best version**.
+7. Use **Export** to download a promotion package, or configure **Create Git PR** when your Git token
+   is ready.
+
+What you should see in five minutes:
+
+- a generated or improved prompt/skill from raw source material
+- visible train/test split and policy weights
+- version progress with scores and diffs
+- eval insights showing what worked, what failed, and what to change next
+- approval metadata and a promotion package with raw data, policy, knowledge, hashes, and lineage
+
+Prefer the CLI from the cloned repo? Install locally and run the same kind of no-key optimization:
+
+```bash
+python -m pip install -e .
+aiterate optimize \
+  --name support-agent \
+  --data examples/raw_support_notes.txt \
+  --policy examples/policies.yml
+```
+
+### Choose A Workflow
 
 Choose the path that fits your audience:
 
@@ -67,37 +112,65 @@ All three workflows can create, optimize, version, and trace prompts or agent sk
 
 ## UI Workflow
 
-Start the backend:
+Start the production-style backend stack with Docker:
+
+```bash
+docker compose up --build
+```
+
+Open `http://localhost:5173`. The API container serves the built React UI, so the default Docker
+flow does not need a separate Node container.
+
+For active UI development with hot reload, run the web app locally instead:
 
 ```bash
 uvicorn aiterate.api.main:app --reload
 ```
 
-Start the web app:
-
 ```bash
 cd frontend
+npm install
 npm run dev
 ```
 
-Open the local UI, paste or upload raw data, enter policies, choose a provider, and run the
-optimization. Provider credentials can be pasted for one run or saved encrypted server-side.
+Open the local UI, import context, choose models, and run the optimization. Provider and tracking
+credentials can be pasted once and saved encrypted server-side. Saved credentials are shown only as
+configured status and fingerprints, never as full secret values.
 
 The UI supports:
 
-- file upload for text, CSV, JSON, YAML, YML, and Markdown
-- automatic data-category detection
+- separate context lanes for **Data / Examples**, **Policies**, and **Knowledge Base / References**
+- multi-file upload for text, CSV, JSON, YAML, YML, and Markdown
+- automatic context detection and policy extraction from uploaded files
 - optional baseline prompt/skill input for existing production artifacts
-- policy weight editing or equal weighting
+- visible train/test split controls so users know what is optimized and what is held out
+- run controls for optimization depth, iterations, promotion threshold, spend cap, and repeatable seed
+- optional target-model validation on holdout examples before approval
+- policy weight editing, equal weighting, and regression-oriented eval criteria
 - native eval checks for regression-sensitive behavior, safety, grounding, and output shape
-- separate optimizer model and target model selection
-- safe provider credential entry with hidden keys
-- MLflow/LangSmith tracking selection
+- separate optimizer and target model selection, with separate credentials when providers differ
+- provider readiness testing before a run starts
+- optional MLflow/LangSmith tracking, including URI/endpoint, project, and token setup
 - Git artifact tracking and promotion PR workflow scaffolding
+- per-project Git settings for tracking, remote, PR workflow, and base branch
 - GitHub and Bitbucket promotion PR publishing when server credentials are configured
-- optimization run results with accepted and rejected candidate decisions
+- a Run History dashboard with approved-artifact badges, clickable run details, delete confirmation, and project cleanup
+- optimization run results with candidates for approval and attempts not used
+- visual version progress with score deltas across accepted versions
+- clickable rejected-attempt details with the proposed content, score, gate decision, and diff
 - native eval report with pass rate, failed checks, and suggested prompt/skill changes
-- validate and approve flow before creating a promotion PR
+- manual approval flow for the best version before creating a promotion PR
+- model comparison for any approved historical artifact, with live eval mode when provider calls are enabled
+- promotion packages that include the approved artifact, run JSON, and metadata for data, policy,
+  raw source snapshots, knowledge sources, model/provider lineage, eval results, accepted versions,
+  rejected attempts, approval, and promotion destination settings
+- promotion PRs include human-readable source snapshots plus immutable hash-addressed copies under
+  `aiterate/immutable/sources/<kind>/<sha256>/`, with DVC pointer files under `aiterate/dvc/<run_id>/`
+
+Model comparison can run in two modes. The default offline mode estimates prompt/model fit from the
+same approved artifact, policy rubric, source data, and selected model profile without provider
+cost. Enable live eval to call the selected providers on holdout examples before making a final
+production model decision.
 
 Typical use cases:
 
@@ -105,6 +178,7 @@ Typical use cases:
   escalation, and tone regressions before promotion
 - a skill needs to be generated from messy notes and reviewed as a versioned artifact
 - platform teams need to compare prompt versions or model targets with the same eval rubric
+- teams want to reopen an approved artifact later and compare it across newer or cheaper models
 - governance teams need proof of which data, policy, model, and approval produced a prompt
 
 ## CLI Workflow
@@ -143,7 +217,7 @@ If you already have a prompt or skill, use it as the starting baseline:
 aiterate optimize --name support-agent --data raw_support_notes.txt --baseline current_prompt.md --policy policies.yml
 ```
 
-If `--baseline` is omitted, AIterate creates the initial baseline from raw data and
+If `--baseline` is omitted, Aiterate creates the initial baseline from raw data and
 policies. The CLI defaults to a local mock provider so developers can test automation before adding
 model credentials.
 
@@ -180,7 +254,7 @@ aiterate eval \
 
 ## Notebook Or Python Workflow
 
-Use AIterate directly from a notebook, script, or backend job:
+Use Aiterate directly from a notebook, script, or backend job:
 
 ```python
 from pathlib import Path
@@ -273,7 +347,14 @@ curl -X POST http://127.0.0.1:8000/v1/optimize \
 
 ## Supported Data Formats
 
-AIterate accepts plain text plus structured files. Structured data can use any of these top-level
+Aiterate accepts plain text plus structured files. The UI separates uploaded material into three
+roles:
+
+- **Data / Examples** become training and validation cases for optimization and regression testing.
+- **Policies** become weighted rules, acceptance criteria, and scoring signals.
+- **Knowledge Base / References** become grounding context for the generated artifact.
+
+Structured data can use any of these top-level
 arrays:
 
 - `cases`
@@ -304,7 +385,7 @@ Data is incomplete.,Escalate uncertainty.
 
 ## Model Providers
 
-AIterate supports first-class provider configuration for:
+Aiterate supports first-class provider configuration for:
 
 - OpenAI
 - Anthropic
@@ -325,12 +406,20 @@ AWS_PROFILE=...
 
 ## Tracking
 
-AIterate can record optimization runs, scores, artifacts, and lineage in MLflow. LangSmith support is
-available for teams that use it for LLM observability.
+Aiterate can record optimization runs, scores, artifacts, and lineage in MLflow. LangSmith support is
+available for teams that use it for LLM observability. Tracking is optional in the guided workflow;
+users can run locally without it and add tracking later.
 
 ```bash
-MLFLOW_TRACKING_URI=http://localhost:5000
+MLFLOW_TRACKING_URI=http://host.docker.internal:5000
+MLFLOW_TRACKING_TOKEN=...
+LANGSMITH_ENDPOINT=https://api.smith.langchain.com
+LANGSMITH_API_KEY=...
 ```
+
+For Docker Compose, `http://host.docker.internal:5000` points from the Aiterate API container back
+to an MLflow server running on your machine. If MLflow runs as its own Compose or Kubernetes service,
+replace it with that service URL.
 
 ## Background Jobs
 
@@ -362,13 +451,29 @@ AZURE_OPENAI_API_KEY=...
 AZURE_OPENAI_ENDPOINT=...
 AWS_PROFILE=...
 AWS_REGION=us-east-1
-MLFLOW_TRACKING_URI=http://localhost:5000
+MLFLOW_TRACKING_URI=http://host.docker.internal:5000
 LANGSMITH_API_KEY=...
 GITHUB_TOKEN=...
 GITHUB_APP_ID=...
+GITHUB_OAUTH_CLIENT_ID=...
+GITHUB_OAUTH_CLIENT_SECRET=...
 BITBUCKET_TOKEN=...
+BITBUCKET_OAUTH_CLIENT_ID=...
+BITBUCKET_OAUTH_CLIENT_SECRET=...
 AIT_SECRET_PROVIDER=database
 ```
+
+For Git PR publishing, the UI can use browser-based GitHub or Bitbucket OAuth when the OAuth client
+ID/secret variables are configured. Manual tokens remain available as an encrypted fallback for
+self-hosted and restricted enterprise environments.
+
+Promotion PRs write the approved artifact, redacted run metadata, source manifest, raw source
+snapshots, immutable content-addressed source copies, and DVC pointer files. Aiterate generates
+promotion branches automatically with names like `aiterate/promote-art-...`; users only choose the
+PR base branch. The raw snapshots are easy for reviewers to read; the immutable paths and hashes make
+it clear which exact data, policies, and knowledge sources produced the approved artifact. Teams with
+larger datasets can wire the emitted `.dvc` files to their own DVC remote or use Git LFS for
+`aiterate/sources/**` and `aiterate/immutable/sources/**`.
 
 For production, set `AIT_SECRET_PROVIDER` to `vault`, `aws`, `azure`, or `gcp` and configure the
 matching backend variables. Run database/tracking connections over TLS.
@@ -388,14 +493,28 @@ compare models, approve runs, and publish PRs. Viewer users can read runs and jo
 
 ## Production Persistence
 
-AIterate defaults to local SQLite for a fast single-user quickstart. Use Postgres for run history,
+Aiterate defaults to local SQLite for a fast single-user quickstart. Use Postgres for run history,
 jobs, audit logs, and encrypted secret metadata in production.
+
+Docker Compose local/self-hosted runs set `AIT_AUTO_GENERATE_SECRET_KEY=true` by default. On first
+start, Aiterate creates a Fernet key in the persisted `.aiterate` volume and reuses it on later
+starts. This avoids first-run setup friction while keeping saved UI credentials encrypted.
 
 ```bash
 AIT_DATABASE_URL=postgresql+psycopg://aiterate:aiterate@localhost:5432/aiterate
 AIT_SECRET_KEY=<fernet-key>
+AIT_AUTO_GENERATE_SECRET_KEY=false
+AIT_TRUST_ENV_PROXY=false
 AIT_ENABLE_LOCAL_GIT=false
 ```
+
+For production, set `AIT_SECRET_KEY` yourself or use a managed secret provider. Keep the same key for
+the lifetime of saved credentials; changing it prevents existing encrypted credentials from being
+decrypted.
+
+By default, native provider calls ignore `HTTP_PROXY` and `HTTPS_PROXY` from the host environment so
+broken local proxy variables do not cause provider connection failures. Set `AIT_TRUST_ENV_PROXY=true`
+when your enterprise network requires those proxy variables.
 
 Apply migrations before starting production services:
 
@@ -414,5 +533,5 @@ PR workflow for promotion.
 
 ## Status
 
-AIterate is early open-source software. The package is designed for local experimentation first, with
+Aiterate is early open-source software. The package is designed for local experimentation first, with
 production and enterprise integrations built into the roadmap.
