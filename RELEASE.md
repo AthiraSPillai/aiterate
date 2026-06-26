@@ -74,7 +74,20 @@ Run a local mock optimization:
 
 ## 6. Publish To TestPyPI First
 
-Create a TestPyPI API token at https://test.pypi.org/manage/account/token/.
+Preferred path: TestPyPI Trusted Publisher with GitHub Actions.
+
+On TestPyPI, add a pending GitHub publisher with:
+
+- Project name: `aiterate`
+- Owner: `AthiraSPillai`
+- Repository name: `aiterate`
+- Workflow name: `publish-testpypi.yml`
+- Environment name: `testpypi`
+
+Then run the GitHub Actions workflow **Publish to TestPyPI** manually from the repository Actions
+tab. The workflow uses OIDC trusted publishing and does not need a TestPyPI password or API token.
+
+Manual fallback: create a TestPyPI API token at https://test.pypi.org/manage/account/token/.
 
 ```bash
 .venv\Scripts\python -m twine upload --repository testpypi dist/*
@@ -90,7 +103,19 @@ python -m venv .venv-testpypi
 
 ## 7. Publish To PyPI
 
-Create a PyPI API token at https://pypi.org/manage/account/token/.
+Preferred path: PyPI Trusted Publisher on the GitHub release workflow.
+
+On PyPI, configure a trusted publisher for:
+
+- Project name: `aiterate`
+- Owner: `AthiraSPillai`
+- Repository name: `aiterate`
+- Workflow name: `publish.yml`
+
+Then publish a GitHub release. The workflow **Publish Python Package** uploads to PyPI without a
+password or API token.
+
+Manual fallback: create a PyPI API token at https://pypi.org/manage/account/token/.
 
 ```bash
 .venv\Scripts\python -m twine upload dist/*
@@ -104,7 +129,7 @@ Before announcing:
 - Add topics: `ai`, `prompt-engineering`, `prompt-optimization`, `prompt-management`, `llm-evals`, `regression-testing`, `agents`, `mlflow`, `langsmith`, `fastapi`, `react`, `pypi`.
 - Enable Issues and Discussions.
 - Add branch protection for `main`.
-- Add PyPI trusted publishing later, after the first manual release.
+- Configure TestPyPI and PyPI trusted publishing.
 - Create a GitHub release tagged `v0.1.0`.
 
 ## Known V1 Gaps To Be Honest About
