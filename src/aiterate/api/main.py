@@ -996,6 +996,16 @@ def _secret_value_is_placeholder(name: str, value: str | None) -> bool:
     return upper_value in placeholders or upper_value.endswith("_API_KEY")
 
 
+@app.api_route(
+    "/v1/{path:path}",
+    methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    include_in_schema=False,
+)
+def api_fallback(path: str) -> None:
+    _ = path
+    raise HTTPException(status_code=404, detail="API route not found.")
+
+
 if _frontend_dist.exists():
     app.mount("/assets", StaticFiles(directory=_frontend_dist / "assets"), name="frontend-assets")
 
@@ -1005,6 +1015,4 @@ if _frontend_dist.exists():
 
     @app.get("/{path:path}", include_in_schema=False)
     def frontend_fallback(path: str) -> FileResponse:
-        if path.startswith("v1/"):
-            raise HTTPException(status_code=404, detail="API route not found.")
         return FileResponse(_frontend_dist / "index.html")

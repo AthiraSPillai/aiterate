@@ -42,6 +42,7 @@ build/
 .venv-release-test/
 .venv-release-test*/
 .venv-testpypi/
+.venv-testpypi*/
 
 # Local agent/tooling context
 AGENTS.md
