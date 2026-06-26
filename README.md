@@ -11,7 +11,7 @@ which policy or dataset triggered the change, whether old behavior regressed, an
 safe to promote. Aiterate turns those edits into a repeatable lifecycle with eval checks,
 regression signals, approvals, and traceable versions.
 
-![Aiterate workflow](docs/assets/aiterate-workflow.gif)
+![Aiterate workflow](https://raw.githubusercontent.com/AthiraSPillai/aiterate/main/docs/assets/aiterate-workflow.gif)
 
 ## Why Use Aiterate?
 
@@ -30,7 +30,43 @@ regression signals, approvals, and traceable versions.
 - Compare approved artifacts across model providers using the same prompt and rubric.
 - Run locally with SQLite metadata storage, then move to Postgres for production.
 
-## Install
+## Start Here
+
+### Use The Product UI
+
+The simplest way to use Aiterate is the published Docker image. It includes the backend API and the
+built React UI in one container.
+
+```bash
+docker run --rm -p 8000:8000 \
+  -v aiterate-data:/app/.aiterate \
+  ghcr.io/athiraspillai/aiterate:latest
+```
+
+Open:
+
+```text
+http://localhost:8000
+```
+
+The mounted `aiterate-data` volume keeps run history, project settings, and encrypted UI-saved
+credentials across restarts. Users can paste provider keys in the UI once; saved secrets are stored
+encrypted server-side and never shown back in full.
+
+For a production-like local stack with Postgres, Redis, and MLflow, clone the repo and use Docker
+Compose:
+
+```bash
+git clone https://github.com/AthiraSPillai/aiterate.git
+cd aiterate
+docker compose up --build
+```
+
+Open `http://localhost:8000` or `http://localhost:5173`.
+
+### Developer CLI And SDK
+
+Use PyPI when you want the CLI, SDK, or backend-only API in your own environment:
 
 ```bash
 pip install aiterate
@@ -60,16 +96,15 @@ Aiterate supports Python **3.11, 3.12, and 3.13**.
 
 ### 5-Minute Demo
 
-Try Aiterate with the built-in sample flow first. You do not need cloud model keys for the first
-run.
+Try Aiterate with the built-in sample flow first. You do not need cloud model keys for the first run.
 
 ```bash
-git clone https://github.com/AthiraSPillai/aiterate.git
-cd aiterate
-docker compose up --build
+docker run --rm -p 8000:8000 \
+  -v aiterate-data:/app/.aiterate \
+  ghcr.io/athiraspillai/aiterate:latest
 ```
 
-Open `http://localhost:5173`, then:
+Open `http://localhost:8000`, then:
 
 1. Go to **Import context** and click **Load sample project**.
 2. Review the separated **Data / Examples**, **Policies**, and **Knowledge Base** context.
@@ -90,14 +125,14 @@ What you should see in five minutes:
 - eval insights showing what worked, what failed, and what to change next
 - approval metadata and a promotion package with raw data, policy, knowledge, hashes, and lineage
 
-Prefer the CLI from the cloned repo? Install locally and run the same kind of no-key optimization:
+Prefer the CLI? Install from PyPI and run the same kind of no-key optimization:
 
 ```bash
-python -m pip install -e .
+pip install aiterate
 aiterate optimize \
   --name support-agent \
-  --data examples/raw_support_notes.txt \
-  --policy examples/policies.yml
+  --data raw_support_notes.txt \
+  --policy policies.yml
 ```
 
 ### Choose A Workflow
@@ -112,14 +147,24 @@ All three workflows can create, optimize, version, and trace prompts or agent sk
 
 ## UI Workflow
 
-Start the production-style backend stack with Docker:
+Start the one-container UI:
 
 ```bash
-docker compose up --build
+docker run --rm -p 8000:8000 \
+  -v aiterate-data:/app/.aiterate \
+  ghcr.io/athiraspillai/aiterate:latest
 ```
 
-Open `http://localhost:5173`. The API container serves the built React UI, so the default Docker
-flow does not need a separate Node container.
+Open `http://localhost:8000`. The container serves the built React UI through the FastAPI backend.
+For saved credentials and run history, keep the volume mounted.
+
+For the full local stack with Postgres, Redis, and MLflow:
+
+```bash
+git clone https://github.com/AthiraSPillai/aiterate.git
+cd aiterate
+docker compose up --build
+```
 
 For active UI development with hot reload, run the web app locally instead:
 
